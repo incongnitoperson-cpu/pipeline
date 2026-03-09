@@ -4,17 +4,17 @@ import os
 
 os.makedirs("data", exist_ok=True)
 
-# Kalshi markets
+# -------- KALSHI --------
 kalshi_url = "https://api.elections.kalshi.com/trade-api/v2/markets"
-params = {"limit": 1000}
 
+params = {"limit": 500}
 kalshi_markets = []
 
-while True:
-    r = requests.get(kalshi_url, params=params)
+for _ in range(10):  # hard stop after 10 pages
+    r = requests.get(kalshi_url, params=params, timeout=20)
     data = r.json()
 
-    kalshi_markets.extend(data["markets"])
+    kalshi_markets.extend(data.get("markets", []))
 
     cursor = data.get("cursor")
     if not cursor:
@@ -25,10 +25,11 @@ while True:
 with open("data/kalshi.json", "w") as f:
     json.dump(kalshi_markets, f)
 
-# Polymarket markets
+# -------- POLYMARKET --------
 poly_url = "https://gamma-api.polymarket.com/markets"
 
-poly = requests.get(poly_url).json()
+r = requests.get(poly_url, timeout=20)
+poly = r.json()
 
 with open("data/polymarket.json", "w") as f:
     json.dump(poly, f)
